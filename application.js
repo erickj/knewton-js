@@ -3,44 +3,64 @@ Application = Object.extend({
 
   data: null,
   lines: null,
-  artists: null,
+
+  artistHash: null,
 
   didReceiveData: function(response,text,xml,xhr) {
-    Log.info("received data, length:",response.length);
+    Log.debug("received data, length:",response.length);
     this.run(response);
   },
 
   run: function(response) {
     this.data = response;
     this.lines = this.data.split("\n");
-    this.artists = {};
+    this.artistHash = {};
+    this.results = [];
 
     // parse lines and artists
     var lineArtists;
     for (var i=0,l=this.lines.length;i<l;i++) {
-      lineArtists = this._getArtistsFromLine(this.lines[i]);
-      for (var j=0,lj=lineArtists.length;j<lj;j++) {
-        lineArtists[j].appendLine(this.lines[i]);
-      }
+      this._buildArtistsFromLine(this.lines[i]);
     }
 
-    // print
+    // print artist pairs who appear on N_LINES with eachother
+    var artist;
+    for (var a in this.artistHash) if (this.artistHash.hasOwnProperty(a) && Artist.prototype.isPrototypeOf(this.artistHash[a])) {
+      artist = this.artistHash[a];
+      var list = artist.getArtistListWithNCollisions(this.N_LINES);
+      this._addToResults(artist,list);
+    }
   },
 
-  _getArtistsFromLine: function(line) {
+  getFormattedResults: function() {
+    var str = "";
+    for (var i=0,l=this.results.length;i<l;i++) {
+      str += this.results[i].join(",") + "\n";
+    }
+    return str;
+  },
+
+  _addToResults: function(artist, pairList) {
+    for (var i=0,l=pairList.length;i<l;i++) {
+      this.results.push([artist.name,pairList[i]]);
+    }
+  },
+
+  _buildArtistsFromLine: function(line) {
     var artistNames = line.split(",");
 
     var crntArtist,crntName, lineArtists = [];
     for (var i=0,l=artistNames.length;i<l;i++) {
       crntName = artistNames[i];
 
-      crntArtist = this.artists[crntName];
+      crntArtist = this.artistHash[crntName];
       if (!crntArtist) {
         crntArtist = Artist.create({name: crntName});
         crntArtist.init();
-        this.artists[crntName] = crntArtist;
+        this.artistHash[crntName] = crntArtist;
       }
 
+      crntArtist.appendLine(artistNames);
       lineArtists.push(crntArtist);
     }
     return lineArtists;

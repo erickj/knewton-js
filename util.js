@@ -1,10 +1,34 @@
 /*
  * Safe logger
  */
-ConsoleLog = Object.extend({
-  console: console,
+LogBase = Object.extend({
+  LOG_LEVEL: 15, // 1 | 2 | 4 | 8
+  LOG_LEVELS: {
+    debug: 8,
+    info: 4,
+    warn: 2,
+    error: 1
+  },
+
+  clear: function() { /* noop */ },
 
   log: function(level,msg) {
+    if (this.LOG_LEVEL & this.LOG_LEVELS[level]) this._log.apply(this,arguments);
+  },
+
+  _log: function() {
+    // override in subclass
+  },
+
+  debug: function() { this.log.apply(this, ['debug'].concat(Array.from(arguments))); },
+  info: function() { this.log.apply(this, ['info'].concat(Array.from(arguments))); },
+  warn: function() { this.log.apply(this, ['warn'].concat(Array.from(arguments))); },
+  error: function() { this.log.apply(this, ['error'].concat(Array.from(arguments))); }
+});
+
+ConsoleLog = LogBase.extend({
+  console: console,
+  _log: function(level,msg) {
     if (!this.console) return;
 
     var console = this.console;
@@ -17,18 +41,18 @@ ConsoleLog = Object.extend({
     }
 
     method.apply(console,args);
-  },
-  debug: function() { this.log.apply(this, ['debug'].concat(Array.from(arguments))); },
-  info: function() { this.log.apply(this, ['info'].concat(Array.from(arguments))); },
-  warn: function() { this.log.apply(this, ['warn'].concat(Array.from(arguments))); },
-  error: function() { this.log.apply(this, ['error'].concat(Array.from(arguments))); }
+  }
 });
 
-DOMLog = ConsoleLog.extend({
+DOMLog = LogBase.extend({
   id: null,
   console: null,
 
-  log: function() {
+  clear: function() {
+    this.console.clear();
+  },
+
+  _log: function() {
     if (!this.console) {
       var el = document.getElementById(this.id);
       if (!el) throw new Error('cannot find log element with id: ' + this.id);
@@ -44,6 +68,12 @@ DOMLog = ConsoleLog.extend({
     el: null,
     msgEl: 'div',
     msgClass: 'log-message',
+    lvlClass: 'log-level',
+
+    clear: function() {
+      this.el.innerHTML = "";
+    },
+
     log: function(level,msg) {
       var msgEl = document.createElement(this.msgEl);
       msg = level + ": " + Array.from(arguments).slice(1).join(", ");
@@ -67,10 +97,10 @@ Ajax = Object.extend({
 
   _defaultCallbacks: {
     onSuccess: function(response, responseText, responseXML, xhr, event) {
-      Log.info('xhr success',arguments);
+      Log.debug('xhr success',arguments);
     },
     onError: function(xhr, event) {
-      Log.error('xhr error',arguments);
+      Log.error('xhr error',arguments, "status code:", xhr.status);
     }
   },
 
@@ -90,6 +120,7 @@ Ajax = Object.extend({
   },
 
   _onReadStateChange: function(xhr, callbacks, evt) {
+    Log.debug('xhr.readyState changed to',xhr.readyState);
     if (xhr.readyState !== 4) return;
 
     callbacks = callbacks || {};

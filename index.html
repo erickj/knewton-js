@@ -1,35 +1,122 @@
 <html>
 <head>
   <title>Knewton Artists</title>
+  <style type="text/css">
+    body {
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    #app-controls-wrapper {
+      position: absolute;
+      left: 0;
+      width: 450px;
+      top: 0;
+      bottom: 300px;
+      overflow: auto;
+      padding: 10px;
+      border-top: 1px solid gray;
+    }
+
+    #app-log-wrapper {
+      position: absolute;
+      left: 0;
+      width: 450px;
+      top: 300px;
+      bottom: 0;
+      overflow: auto;
+      padding: 10px;
+      border-top: 1px solid gray;
+    }
+
+    #app-results-wrapper {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 470px;
+      right: 0;
+      overflow: auto;
+      padding: 10px;
+      border: 1px solid gray;
+    }
+
+    #app-log {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #url {
+      width: 200px;
+    }
+  </style>
 </head>
 <body>
-  <div id="app-log"></div>
+  <div id="app-controls-wrapper">
+    <h2>Application Controls</h2>
+    <p>
+      README: Click &quot;run&quot; to run the application.  Results will appear on the right under &quot;Application Results&quot;.  The document URL to load must be in the same origin as the current origin, barring and CORS exceptions you may have made (Access-Control headers);
+    </p>
+    <div>
+      <span>Document URL</span>
+      <input type="text" id="url" value="data/Artist_lists_small.txt"/>
+    </div>
+    <div>
+      <input type="button" value="Run" id="run"/>
+    </div>
+  </div>
+
+  <div id="app-log-wrapper">
+    <h2>Application Log</h2>
+    <div id="app-log"></div>
+  </div>
+
+  <div id="app-results-wrapper">
+    <h2>Application Results</h2>
+    <pre id="app-results"></pre>
+  </div>
 
   <script src="base.js" type="text/javascript"></script>
   <script src="util.js" type="text/javascript"></script>
   <script src="artist.js" type="text/javascript"></script>
   <script src="application.js" type="text/javascript"></script>
   <script type="text/javascript">
-    var dataURL = 'data/Artist_lists_small.txt';
-    var Log;
+
+    var Log, app;
+
     document.addEventListener("DOMContentLoaded", function() {
       Log = DOMLog.create({id: 'app-log'});
-      Log.info("Document loaded, fetching data");
+      Log.debug("Document loaded");
+    });
 
-      var app = Application.create({
+    document.getElementById('run').addEventListener("click", function() {
+      Log.clear();
+      document.getElementById('app-results').innerHTML = "";
+
+      Log.debug("Run clicked");
+
+      var dataURL = document.getElementById('url').value;
+      Log.debug("Data URL is: ",dataURL);
+
+      app = Application.create({
         N_LINES: 50
       });
 
+      Log.debug("Fetching Data from", dataURL);
       var tStart = new Date();
       Ajax.get(dataURL,{
-        onSuccess: function() {
+        onSuccess: function(response) {
           var tEnd = new Date();
-          Log.debug("Loaded  data in " + (tEnd - tStart) + "ms");
+          Log.debug("Loaded  data from " + dataURL + " in " + (tEnd - tStart) + "ms");
 
           var tStart2 = new Date();
-          app.didReceiveData.bind(app)
+          app.didReceiveData(response)
           var tEnd2 = new Date();
           Log.debug("Processed  data in " + (tEnd2 - tStart2) + "ms");
+
+          var results = app.getFormattedResults();
+          document.getElementById('app-results').innerHTML = results;
         }
       })
     });
