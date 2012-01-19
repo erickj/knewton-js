@@ -14,10 +14,23 @@
     var Log;
     document.addEventListener("DOMContentLoaded", function() {
       Log = DOMLog.create({id: 'app-log'});
-
       Log.info("Document loaded, fetching data");
+
+      var app = Application.create({
+        N_LINES: 50
+      });
+
+      var tStart = new Date();
       Ajax.get(dataURL,{
-        onSuccess: Application.didReceiveData.bind(Application)
+        onSuccess: function() {
+          var tEnd = new Date();
+          Log.debug("Loaded  data in " + (tEnd - tStart) + "ms");
+
+          var tStart2 = new Date();
+          app.didReceiveData.bind(app)
+          var tEnd2 = new Date();
+          Log.debug("Processed  data in " + (tEnd2 - tStart2) + "ms");
+        }
       })
     });
   </script>
