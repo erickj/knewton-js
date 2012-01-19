@@ -3,8 +3,23 @@
   <title>Knewton Artists</title>
 </head>
 <body>
+  <div id="app-log"></div>
+
   <script src="base.js" type="text/javascript"></script>
+  <script src="util.js" type="text/javascript"></script>
   <script src="artist.js" type="text/javascript"></script>
-  <script src="runner.js" type="text/javascript"></script>
+  <script src="application.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var dataURL = 'data/Artist_lists_small.txt';
+    var Log;
+    document.addEventListener("DOMContentLoaded", function() {
+      Log = DOMLog.create({id: 'app-log'});
+
+      Log.info("Document loaded, fetching data");
+      Ajax.get(dataURL,{
+        onSuccess: Application.didReceiveData.bind(Application)
+      })
+    });
+  </script>
 </body>
 </html>
