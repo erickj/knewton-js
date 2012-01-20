@@ -1,0 +1,8 @@
+Where N is the number of artists in all lists (non-unique)
+Where Nu is ther number of unique artists
+Where M is the average number of lists an artist appears in
+
+Time complexity O(N)
+Space complexity O(Nu*M)
+
+See http://ejjohnson.org/knewton-js for a live example
