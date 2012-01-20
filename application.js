@@ -11,11 +11,10 @@ Application = Object.extend({
   artistHash: null,
 
   run: function() {
-    Log.debug("Fetching Data from", dataURL);
-
     var dataURL = this.URL;
     var tStart = new Date();
 
+    Log.debug("Fetching Data from", dataURL);
     Ajax.get(dataURL,{
       onSuccess: function ajaxOnSuccess(response) {
         var tEnd = new Date();
