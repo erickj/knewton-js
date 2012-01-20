@@ -1,17 +1,39 @@
 Application = Object.extend({
   N_LINES: null,
+  URL: null,
+  UNIQUE_PAIRS: null,
+
+  onComplete: null,
 
   data: null,
   lines: null,
 
   artistHash: null,
 
-  didReceiveData: function(response,text,xml,xhr) {
-    Log.debug("received data, length:",response.length);
-    this.run(response);
+  run: function() {
+    Log.debug("Fetching Data from", dataURL);
+
+    var dataURL = this.URL;
+    var tStart = new Date();
+
+    Ajax.get(dataURL,{
+      onSuccess: function(response) {
+        var tEnd = new Date();
+        Log.debug("Loaded  data from " + dataURL + " in " + (tEnd - tStart) + "ms");
+        Log.debug("received data, length:",response.length);
+
+        var tStart2 = new Date();
+        this._processResponse(response);
+        var tEnd2 = new Date();
+
+        Log.debug("Processed  data in " + (tEnd2 - tStart2) + "ms");
+
+        this.onComplete(this._getFormattedResults());
+      }.bind(this)
+    });
   },
 
-  run: function(response) {
+  _processResponse: function(response) {
     this.data = response;
     this.lines = this.data.split("\n");
     this.artistHash = {};
@@ -30,9 +52,11 @@ Application = Object.extend({
       var list = artist.getArtistListWithNCollisions(this.N_LINES);
       this._addToResults(artist,list);
     }
+
+    Log.debug("Matching pairs:",this.results.length);
   },
 
-  getFormattedResults: function() {
+  _getFormattedResults: function() {
     var str = "";
     for (var i=0,l=this.results.length;i<l;i++) {
       str += this.results[i].join(",") + "\n";

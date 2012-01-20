@@ -6,6 +6,8 @@
       margin: 0;
       padding: 0;
       position: relative;
+      width: 100%;
+      height: 100%;
     }
 
     #app-controls-wrapper {
@@ -13,7 +15,7 @@
       left: 0;
       width: 450px;
       top: 0;
-      bottom: 300px;
+      bottom: 400px;
       overflow: auto;
       padding: 10px;
       border-top: 1px solid gray;
@@ -23,7 +25,7 @@
       position: absolute;
       left: 0;
       width: 450px;
-      top: 300px;
+      top: 400px;
       bottom: 0;
       overflow: auto;
       padding: 10px;
@@ -50,6 +52,15 @@
     #url {
       width: 200px;
     }
+
+    .control {
+      margin-top: 10px;
+    }
+
+    .control label {
+      display: block;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -58,12 +69,16 @@
     <p>
       README: Click &quot;run&quot; to run the application.  Results will appear on the right under &quot;Application Results&quot;.  The document URL to load must be in the same origin as the current origin, barring and CORS exceptions you may have made (Access-Control headers);
     </p>
-    <div>
-      <span>Document URL</span>
+    <div class="control">
+      <label>Document URL</label>
       <input type="text" id="url" value="data/Artist_lists_small.txt"/>
     </div>
-    <div>
-      <input type="button" value="Run" id="run"/>
+    <div class="control">
+      <label>Constrain Results To Unique Pairs</label>
+      <input type="checkbox" id="unique-pairs" checked="checked" value="true"/>
+    </div>
+    <div class="control">
+      <input type="button" value="Run" id="run" style="display:none;"/>
     </div>
   </div>
 
@@ -83,42 +98,42 @@
   <script src="application.js" type="text/javascript"></script>
   <script type="text/javascript">
 
-    var Log, app;
+    var Log;
 
-    document.addEventListener("DOMContentLoaded", function() {
-      Log = DOMLog.create({id: 'app-log'});
-      Log.debug("Document loaded");
-    });
-
-    document.getElementById('run').addEventListener("click", function() {
+    var onRunClick = function onRunClick() {
       Log.clear();
       document.getElementById('app-results').innerHTML = "";
 
       Log.debug("Run clicked");
 
       var dataURL = document.getElementById('url').value;
-      Log.debug("Data URL is: ",dataURL);
+      Log.info("Data URL is: ",dataURL);
+
+      var uniquePairs = document.getElementById('unique-pairs').checked;
+      Log.info("Constrain to unique pairs: ",uniquePairs);
 
       app = Application.create({
-        N_LINES: 50
-      });
-
-      Log.debug("Fetching Data from", dataURL);
-      var tStart = new Date();
-      Ajax.get(dataURL,{
-        onSuccess: function(response) {
-          var tEnd = new Date();
-          Log.debug("Loaded  data from " + dataURL + " in " + (tEnd - tStart) + "ms");
-
-          var tStart2 = new Date();
-          app.didReceiveData(response)
-          var tEnd2 = new Date();
-          Log.debug("Processed  data in " + (tEnd2 - tStart2) + "ms");
-
-          var results = app.getFormattedResults();
+        N_LINES: 50,
+        URL: dataURL,
+        UNIQUE_PAIRS: uniquePairs,
+        onComplete: function writeResults(results) {
           document.getElementById('app-results').innerHTML = results;
         }
-      })
+      });
+
+      app.run();
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+      Log = DOMLog.create({id: 'app-log'});
+      Log.debug("Document loaded");
+
+      // attach behavior when we're ready
+      document.getElementById('run').addEventListener("click", onRunClick);
+      Log.debug("Attached on click behavior");
+
+      // show run button when the document is loaded
+      document.getElementById('run').setAttribute('style','display:inline;');
     });
   </script>
 </body>
