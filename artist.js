@@ -14,11 +14,7 @@ Artist = Object.extend({
     return this.lines.length;
   },
 
-  skipArtist: function(artistName) {
-    return artistName == this.name;
-  },
-
-  getArtistListWithNCollisions: function(n) {
+  getArtistListWithNCollisions: function(n,alreadTracked) {
     if (this.numLines() < n) return [];
 
     var ret = [];
@@ -30,12 +26,12 @@ Artist = Object.extend({
       for (var j=0,jl=crntLine.length;j<jl;j++) {
         crntArtistName = crntLine[j];
 
-        if (this.skipArtist(crntArtistName)) continue;
+        if (crntArtistName == this.name || alreadTracked[crntArtistName]) continue;
 
         if (!artistCounts[crntArtistName]) artistCounts[crntArtistName] = 0;
         artistCounts[crntArtistName]++;
 
-        if (artistCounts[crntArtistName] >= n && ret.indexOf(crntArtistName) < 0) {
+        if (artistCounts[crntArtistName] == n) {
           ret.push(crntArtistName);
         }
       }

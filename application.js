@@ -17,7 +17,7 @@ Application = Object.extend({
     var tStart = new Date();
 
     Ajax.get(dataURL,{
-      onSuccess: function(response) {
+      onSuccess: function ajaxOnSuccess(response) {
         var tEnd = new Date();
         Log.debug("Loaded  data from " + dataURL + " in " + (tEnd - tStart) + "ms");
         Log.debug("received data, length:",response.length);
@@ -47,10 +47,13 @@ Application = Object.extend({
 
     // print artist pairs who appear on N_LINES with eachother
     var artist;
+    var trackedHash = {};
     for (var a in this.artistHash) if (this.artistHash.hasOwnProperty(a) && Artist.prototype.isPrototypeOf(this.artistHash[a])) {
       artist = this.artistHash[a];
-      var list = artist.getArtistListWithNCollisions(this.N_LINES);
+      var list = artist.getArtistListWithNCollisions(this.N_LINES,trackedHash);
       this._addToResults(artist,list);
+
+      if (this.UNIQUE_PAIRS) trackedHash[artist.name] = true;
     }
 
     Log.debug("Matching pairs:",this.results.length);
