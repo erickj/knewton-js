@@ -67,7 +67,7 @@
   <div id="app-controls-wrapper">
     <h2>Application Controls</h2>
     <p>
-      README: Click &quot;run&quot; to run the application.  Results will appear on the right under &quot;Application Results&quot;.  The document URL to load must be in the same origin as the current origin, barring and CORS exceptions you may have made (Access-Control headers);
+      README: Click &quot;Run&quot; to run the application.  Results will appear on the right under &quot;Application Results&quot;.  The document URL to load must be in the same origin as the current origin, barring any CORS exceptions you may have made (Access-Control headers);
     </p>
     <div class="control">
       <label>Document URL</label>
@@ -124,7 +124,7 @@
       app.run();
     };
 
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function domContentLoaded() {
       Log = DOMLog.create({id: 'app-log'});
       Log.debug("Document loaded");
 
