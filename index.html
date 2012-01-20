@@ -74,6 +74,10 @@
       <input type="text" id="url" value="data/Artist_lists_small.txt"/>
     </div>
     <div class="control">
+      <label>Shared Lists</label>
+      <input type="text" id="n-lists" value="50"/>
+    </div>
+    <div class="control">
       <label>Constrain Results To Unique Pairs</label>
       <input type="checkbox" id="unique-pairs" checked="checked" value="true"/>
     </div>
@@ -109,11 +113,14 @@
       var dataURL = document.getElementById('url').value;
       Log.info("Data URL is: ",dataURL);
 
+      var nLines = document.getElementById('n-lists').value;
+      Log.info("N lines: ", nLines);
+
       var uniquePairs = document.getElementById('unique-pairs').checked;
       Log.info("Constrain to unique pairs: ",uniquePairs);
 
       app = Application.create({
-        N_LINES: 50,
+        N_LINES: nLines,
         URL: dataURL,
         UNIQUE_PAIRS: uniquePairs,
         onComplete: function writeResults(results) {
